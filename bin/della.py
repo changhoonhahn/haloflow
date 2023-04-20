@@ -49,5 +49,5 @@ def train_NDE_optuna(obs, nf_model='maf', hr=12, gpu=True, mig=True):
     return None
 
 for i in range(10):
-    train_NDE_optuna('mags', nf_model='made', hr=1, gpu=False, mig=False) 
-    train_NDE_optuna('mags_morph', nf_model='made', hr=1, gpu=False, mig=False) 
+    train_NDE_optuna('mags', nf_model='maf', hr=2, gpu=False, mig=False) 
+    train_NDE_optuna('mags_morph', nf_model='maf', hr=2, gpu=False, mig=False) 

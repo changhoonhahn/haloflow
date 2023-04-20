@@ -67,7 +67,7 @@ def get_subhalos(dataset, obs, snapshot=91):
         for p in props: 
             cols.append('%s_%s' % (b, p))
 
-    y_train = np.array([np.array(subhalo[col].data) for col in ['SubhaloMassType_dm']]).T # halo mass 
+    y_train = np.array([np.array(subhalo[col].data) for col in ['SubhaloMassType_stars', 'SubhaloMassType_dm']]).T # stellar and halo mass 
     x_train = np.array([np.array(subhalo[col].data) for col in cols]).T
 
     return y_train, x_train 

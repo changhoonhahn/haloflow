@@ -27,8 +27,8 @@ y_train, x_train = D.get_subhalos(obs, 'train', snapshot=91)
 ##################################################################################
 # prior 
 ##################################################################################
-lower_bounds = torch.tensor([9.]) # training set only includes galaxies with logMstar/Mun > 9
-upper_bounds = torch.tensor([15.])
+lower_bounds = torch.tensor([9., 9.]) # training set only includes galaxies with logMstar/Mun > 9
+upper_bounds = torch.tensor([14., 15.])
 
 prior = Ut.BoxUniform(low=lower_bounds, high=upper_bounds, device=device)
 ##################################################################################
@@ -36,7 +36,7 @@ prior = Ut.BoxUniform(low=lower_bounds, high=upper_bounds, device=device)
 ##################################################################################
 # Optuna Parameters
 n_trials    = 1000
-study_name  = '%s.%s' % (obs, nf_model)
+study_name  = 'msmh.%s.%s' % (obs, nf_model)
 
 output_dir = '/scratch/gpfs/chhahn/haloflow/nde'
 
