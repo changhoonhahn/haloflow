@@ -70,10 +70,16 @@ def get_subhalos(dataset, obs, snapshot=91):
 
     if 'satlum' in obs: 
         for b in ['g', 'r', 'i', 'z']: 
-            if 'satlum_all': 
+            if 'satlum_all' in obs: 
                 cols.append('%s_satlum_all_boxcox' % b)
-            elif 'satlum_1e9': 
+            elif 'satlum_1e9' in obs: 
                 cols.append('%s_satlum_1e9_boxcox' % b)
+
+    if 'rich' in obs: 
+        if 'rich_all' in obs: 
+            cols.append('richness_all') 
+        elif 'rich_1e9' in obs: 
+            cols.append('richness_mlim') 
 
     y_train = np.array([np.array(subhalo[col].data) for col in ['SubhaloMassType_stars', 'SubhaloMassType_dm']]).T # stellar and halo mass 
     x_train = np.array([np.array(subhalo[col].data) for col in cols]).T
