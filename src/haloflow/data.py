@@ -19,12 +19,12 @@ def get_subhalos(dataset, obs, snapshot=91):
     ''' see nb/compile_subhalos.ipynb and nb/datasets.ipynb
     '''
     if snapshot != 91: raise NotImpelmentedError  
-    fdata  = os.path.join(dat_dir, 'subhalos.central.snapshot%i.%s.csv' % (snapshot, dataset))
+    fdata  = os.path.join(dat_dir, 'subhalos.central.snapshot%i.%s.hdf5' % (snapshot, dataset))
     
     if os.path.isfile(fdata): 
         subhalo   = Table.read(fdata)
     else: 
-        subhalo = Table.read(os.path.join(dat_dir, 'subhalos_morph.csv'))
+        subhalo = Table.read(os.path.join(dat_dir, 'subhalos_morph.hdf5'))
         subhalo = subhalo[subhalo['snapshot'] == snapshot]
         print('%i subhalos' % len(subhalo))
     
@@ -45,8 +45,8 @@ def get_subhalos(dataset, obs, snapshot=91):
         subhalo_test = subhalo[i_test]
         subhalo_train = subhalo[~i_test]
 
-        ftrain  = os.path.join(dat_dir, 'subhalos.central.snapshot%i.train.csv' % snapshot)
-        ftest  = os.path.join(dat_dir, 'subhalos.central.snapshot%i.test.csv' % snapshot)
+        ftrain  = os.path.join(dat_dir, 'subhalos.central.snapshot%i.train.hdf5' % snapshot)
+        ftest  = os.path.join(dat_dir, 'subhalos.central.snapshot%i.test.hdf5' % snapshot)
         subhalo_test.write(ftest) 
         subhalo_train.write(ftrain)
         
@@ -54,18 +54,26 @@ def get_subhalos(dataset, obs, snapshot=91):
             subhalo = subhalo_train 
         elif dataset == 'test': 
             subhalo = subhalo_test
-
-    if obs == 'mags':
-        props = ['Sersic_mag'] 
-    elif obs == 'mags_morph': 
-        props = ['Sersic_Reff', 'Sersic_mag', 'CAS_C', 'CAS_A']
-    else: 
-        raise NotImplementedError
+    
+    for b in ['g', 'r', 'i', 'z']: 
+        subhalo['%s_satlum_all_boxcox' % b] = (subhalo['%s_lum_has_stars' % b]**0.1 - 1)/0.1
+        subhalo['%s_satlum_1e9_boxcox' % b] = (subhalo['%s_lum_above_mlim' % b]**0.1 - 1)/0.1
+    
+    props = [] 
+    if 'mags' in obs: props.append('Sersic_mag') 
+    if 'morph' in obs: props += ['Sersic_Reff', 'CAS_C', 'CAS_A']
 
     cols = []
     for b in ['g', 'r', 'i', 'y', 'z']: 
         for p in props: 
             cols.append('%s_%s' % (b, p))
+
+    if 'satlum' in obs: 
+        for b in ['g', 'r', 'i', 'z']: 
+            if 'satlum_all': 
+                cols.append('%s_satlum_all_boxcox' % b)
+            elif 'satlum_1e9': 
+                cols.append('%s_satlum_1e9_boxcox' % b)
 
     y_train = np.array([np.array(subhalo[col].data) for col in ['SubhaloMassType_stars', 'SubhaloMassType_dm']]).T # stellar and halo mass 
     x_train = np.array([np.array(subhalo[col].data) for col in cols]).T
