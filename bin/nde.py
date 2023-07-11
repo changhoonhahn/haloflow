@@ -22,7 +22,7 @@ nf_model = sys.argv[2]
 ##################################################################################
 # read in training data 
 ##################################################################################
-y_train, x_train = D.get_subhalos('train', obs, snapshot=91) 
+y_train, x_train = D.get_subhalos('train', obs, snapshot=91, version=1) 
 
 ##################################################################################
 # prior 
@@ -36,7 +36,7 @@ prior = Ut.BoxUniform(low=lower_bounds, high=upper_bounds, device=device)
 ##################################################################################
 # Optuna Parameters
 n_trials    = 1000
-study_name  = 'msmh.%s.%s' % (obs, nf_model)
+study_name  = 'msmh.v1.%s.%s' % (obs, nf_model)
 
 output_dir = '/scratch/gpfs/chhahn/haloflow/nde'
 

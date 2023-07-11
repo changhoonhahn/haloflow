@@ -14,12 +14,11 @@ grp_dir = '/scratch/gpfs/chhahn/haloflow/groupcat/idark.ipmu.jp/hsc405/GroupCats
 h = 0.6773358287273804
 
 ##################################################################################
-# read subhalos 
+# read subhalos (compiled subhalo + morphology) 
 subhalo = Table.read(os.path.join(dat_dir, 'subhalos_morph.csv'))
 is_snap  = (subhalo['snapshot'] == snapshot)
 subhalo = subhalo[is_snap]
 print('%i subhalos' % len(subhalo)) 
-
 
 # compile subhalos and groups
 tab_sub, tab_grp = [], []
@@ -48,11 +47,14 @@ subhalo = subhalo[is_central]
 # compile satellite luminosities 
 lum_has_stars = np.zeros((len(subhalo), 4))
 lum_above_mlim = np.zeros((len(subhalo), 4))
+lum_above_mrlim = np.zeros((len(subhalo), 4))
 richness_all = np.zeros(len(subhalo))
 richness_mlim = np.zeros(len(subhalo))
+richness_mrlim = np.zeros(len(subhalo))
 
 has_stars = tab_sub['SubhaloMassType'][:,4] > 0
-above_mlim = np.log10(tab_sub['SubhaloMassType'][:,4] * 10**10 / h) > 9.
+above_mlim = np.log10(tab_sub['SubhaloMassType'][:,4] * 10**10 / h) > 9.    # M* > 10^9 Msun cut 
+above_mrlim = tab_sub['SubhaloStellarPhotometrics'][:,5] < -18  # Mr < -18 absoluate magnitude cut 
 
 for i_sub in tqdm(np.unique(subhalo['subhalo_id'])):
     i_grp = tab_sub['SubhaloGrNr'][i_sub]
@@ -68,16 +70,23 @@ for i_sub in tqdm(np.unique(subhalo['subhalo_id'])):
         np.sum(10**(-0.4 * tab_sub[in_group & above_mlim]['SubhaloStellarPhotometrics'][:,4:]), 
             axis=0),
         (np.sum(is_sub),1))
+    lum_above_mrlim[is_sub,:] = np.tile(
+        np.sum(10**(-0.4 * tab_sub[in_group & above_mrlim]['SubhaloStellarPhotometrics'][:,4:]), 
+            axis=0),
+        (np.sum(is_sub),1))
 
     richness_all[is_sub]    = np.sum(in_group & has_stars)
     richness_mlim[is_sub]   = np.sum(in_group & above_mlim)
+    richness_mrlim[is_sub]  = np.sum(in_group & above_mrlim)
 
 for i, b in enumerate(['g', 'r', 'i', 'z']): 
     subhalo['%s_lum_has_stars' % b] = lum_has_stars[:,i]
     subhalo['%s_lum_above_mlim' % b] = lum_above_mlim[:,i]
+    subhalo['%s_lum_above_mrlim' % b] = lum_above_mrlim[:,i]
 
 subhalo['richness_all'] = richness_all
 subhalo['richness_mlim'] = richness_mlim
+subhalo['richness_mrlim'] = richness_mrlim
 
 subhalo.write(os.path.join(dat_dir, 'subhalos.central.snapshot%i.hdf5' % snapshot), overwrite=True)
 
@@ -92,5 +101,5 @@ print('%s test subhalos' % np.sum(i_test))
 test_subhalos = subhalo[i_test]
 train_subhalos = subhalo[~i_test]
 
-test_subhalos.write(os.path.join(dat_dir, 'subhalos.central.snapshot%i.test.hdf5' % snapshot), overwrite=True)
-train_subhalos.write(os.path.join(dat_dir, 'subhalos.central.snapshot%i.train.hdf5' % snapshot), overwrite=True)
+test_subhalos.write(os.path.join(dat_dir, 'subhalos.central.snapshot%i.v1.test.hdf5' % snapshot), overwrite=True)
+train_subhalos.write(os.path.join(dat_dir, 'subhalos.central.snapshot%i.v1.train.hdf5' % snapshot), overwrite=True)
