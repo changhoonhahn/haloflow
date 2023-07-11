@@ -58,6 +58,7 @@ def get_subhalos(dataset, obs, snapshot=91):
     for b in ['g', 'r', 'i', 'z']: 
         subhalo['%s_satlum_all_boxcox' % b] = (subhalo['%s_lum_has_stars' % b]**0.1 - 1)/0.1
         subhalo['%s_satlum_1e9_boxcox' % b] = (subhalo['%s_lum_above_mlim' % b]**0.1 - 1)/0.1
+        subhalo['%s_satlum_mr_boxcox' % b]  = (subhalo['%s_lum_above_mrlim' % b]**0.1 - 1)/0.1
     
     props = [] 
     if 'mags' in obs: props.append('Sersic_mag') 
@@ -74,12 +75,16 @@ def get_subhalos(dataset, obs, snapshot=91):
                 cols.append('%s_satlum_all_boxcox' % b)
             elif 'satlum_1e9' in obs: 
                 cols.append('%s_satlum_1e9_boxcox' % b)
+            elif 'satlum_mr' in obs: 
+                cols.append('%s_satlum_mr9_boxcox' % b)
 
     if 'rich' in obs: 
         if 'rich_all' in obs: 
             cols.append('richness_all') 
         elif 'rich_1e9' in obs: 
             cols.append('richness_mlim') 
+        elif 'rich_mr' in obs: 
+            cols.append('richness_mrlim') 
 
     y_train = np.array([np.array(subhalo[col].data) for col in ['SubhaloMassType_stars', 'SubhaloMassType_dm']]).T # stellar and halo mass 
     x_train = np.array([np.array(subhalo[col].data) for col in cols]).T
